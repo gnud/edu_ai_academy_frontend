@@ -8,6 +8,8 @@
  *                  so requests go directly to the Django server.
  */
 
+import { getAccessToken } from '@/lib/auth'
+
 const BASE =
   import.meta.env.DEV
     ? '/api'
@@ -30,9 +32,11 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>
 }
 
-function buildHeaders(init?: HeadersInit): HeadersInit {
+function buildHeaders(init?: HeadersInit, withAuth = true): HeadersInit {
+  const token = withAuth ? getAccessToken() : null
   return {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...init,
   }
 }
@@ -43,6 +47,16 @@ export const api = {
       ...init,
       method: 'GET',
       headers: buildHeaders(init?.headers),
+    }).then(handleResponse<T>)
+  },
+
+  /** POST without auto-injecting the Bearer token (for auth endpoints). */
+  postAnon<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
+    return fetch(`${BASE}${path}`, {
+      ...init,
+      method: 'POST',
+      headers: buildHeaders(init?.headers, false),
+      body: JSON.stringify(body),
     }).then(handleResponse<T>)
   },
 

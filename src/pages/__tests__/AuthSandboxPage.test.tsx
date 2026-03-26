@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
-import { clearTokens, saveTokens } from '@/lib/auth'
+import { saveTokens } from '@/lib/auth'
 import { validAccessToken, validRefreshToken } from '@/test/jwtFixtures'
 
 // ── Mock the api module ────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ vi.mock('@/lib/api', () => ({
 }))
 
 import { api } from '@/lib/api'
-const mockApi = api as {
+const mockApi = api as unknown as {
   postAnon: ReturnType<typeof vi.fn>
   get: ReturnType<typeof vi.fn>
 }

@@ -1,12 +1,10 @@
-import { fakeCatalogCourses } from '@/data/courses'
+// import { fakeCatalogCourses } from '@/data/courses'
+// import { useCourseGrid } from '@/hooks/useCourseGrid'
+import { useApiCourseGrid } from '@/hooks/useApiCourseGrid'
 import { CourseGridView } from '@/components/courses/CourseGridView'
-import { useCourseGrid } from '@/hooks/useCourseGrid'
-
-// Simulates page_size coming from the server.
-const PAGE_SIZE = 10
 
 export function CatalogPage() {
-  const grid = useCourseGrid(fakeCatalogCourses, PAGE_SIZE)
+  const grid = useApiCourseGrid('catalog')
 
   return (
     <div className="flex flex-col gap-6">
@@ -15,7 +13,11 @@ export function CatalogPage() {
         <p className="text-muted-foreground text-sm">Discover all available courses and enroll.</p>
       </div>
 
-      <CourseGridView {...grid} allItemsCount={fakeCatalogCourses.length} pageSize={PAGE_SIZE} />
+      {grid.error && (
+        <p className="text-sm text-red-600">{grid.error}</p>
+      )}
+
+      <CourseGridView {...grid} />
     </div>
   )
 }

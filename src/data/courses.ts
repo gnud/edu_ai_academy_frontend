@@ -83,3 +83,47 @@ function generateCourse(index: number): Course {
 }
 
 export const fakeCourses: Course[] = Array.from({ length: 18 }, (_, i) => generateCourse(i))
+
+// Catalog has more entries and skews toward scheduled/active (discoverable courses).
+const CATALOG_TITLES = [
+  ...COURSE_TITLES,
+  'Intro to Cybersecurity',
+  'Statistics for Data Science',
+  'TypeScript Deep Dive',
+  'REST API Design Best Practices',
+  'Linux & Shell Scripting',
+  'Game Development with Unity',
+  'Digital Marketing Analytics',
+  'Product Management Fundamentals',
+  'Technical Writing for Engineers',
+  'Quantum Computing Basics',
+]
+
+faker.seed(99)
+
+export const fakeCatalogCourses: Course[] = Array.from({ length: 30 }, (_, i) => {
+  const status: CourseStatus = i % 3 === 0 ? 'completed' : i % 5 === 0 ? 'cancelled' : i % 2 === 0 ? 'active' : 'scheduled'
+  const isCompleted = status === 'completed'
+  const isActive = status === 'active'
+  const startDate = faker.date.soon({ days: 90 })
+  const endDate = faker.datatype.boolean(0.85)
+    ? faker.date.between({ from: startDate, to: new Date(startDate.getTime() + 1000 * 60 * 60 * 24 * 90) })
+    : null
+
+  return {
+    id: faker.string.uuid(),
+    title: CATALOG_TITLES[i % CATALOG_TITLES.length]!,
+    description: faker.lorem.sentences(2),
+    instructorName: faker.person.fullName(),
+    instructorAvatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${faker.string.alphanumeric(8)}`,
+    thumbnail: `https://picsum.photos/seed/${faker.string.alphanumeric(6)}/400/225`,
+    status,
+    audienceType: faker.helpers.arrayElement(AUDIENCES),
+    progress: isCompleted ? 100 : isActive ? faker.number.int({ min: 5, max: 95 }) : 0,
+    enrolledStudents: faker.number.int({ min: 5, max: 200 }),
+    maxStudents: faker.datatype.boolean(0.5) ? faker.number.int({ min: 25, max: 200 }) : null,
+    startDate: startDate.toISOString(),
+    endDate: endDate ? endDate.toISOString() : null,
+    tags: faker.helpers.arrayElements(TAGS, { min: 2, max: 5 }),
+  }
+})

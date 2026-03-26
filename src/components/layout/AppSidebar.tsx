@@ -3,6 +3,7 @@ import {
   Bot,
   GraduationCap,
   LayoutDashboard,
+  Library,
   MessageSquare,
   Settings,
   Users,
@@ -36,6 +37,7 @@ const navMain: { label: string; items: NavItem[] }[] = [
     items: [
       { title: 'Dashboard', pageId: 'dashboard', icon: LayoutDashboard },
       { title: 'My Courses', pageId: 'courses', icon: BookOpen },
+      { title: 'Course Catalog', pageId: 'catalog', icon: Library },
       { title: 'Live Classes', pageId: 'live-classes', icon: GraduationCap },
     ],
   },

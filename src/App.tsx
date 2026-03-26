@@ -1,13 +1,23 @@
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { CoursesPage } from '@/pages/CoursesPage'
+import { CatalogPage } from '@/pages/CatalogPage'
 
-export type PageId = 'dashboard' | 'courses' | 'live-classes' | 'messages' | 'groups' | 'ai-tutor'
+export type PageId =
+  | 'dashboard'
+  | 'courses'
+  | 'catalog'
+  | 'live-classes'
+  | 'messages'
+  | 'groups'
+  | 'ai-tutor'
 
 function PageContent({ page }: { page: PageId }) {
   switch (page) {
     case 'courses':
       return <CoursesPage />
+    case 'catalog':
+      return <CatalogPage />
     default:
       return (
         <div className="flex flex-col gap-4">
@@ -25,6 +35,7 @@ function PageContent({ page }: { page: PageId }) {
 const PAGE_TITLES: Record<PageId, string> = {
   dashboard: 'Dashboard',
   courses: 'My Courses',
+  catalog: 'Course Catalog',
   'live-classes': 'Live Classes',
   messages: 'Messages',
   groups: 'Study Groups',

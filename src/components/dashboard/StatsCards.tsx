@@ -1,6 +1,8 @@
-import { BookOpen, CalendarClock, Clock, Flame, GraduationCap } from 'lucide-react'
+import { BookOpen, CalendarClock, GraduationCap, XCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { dashboardStats } from '@/data/dashboard'
+import type { HubStats } from '@/lib/hubApi'
+
+// import { dashboardStats } from '@/data/dashboard'
 
 interface StatCardProps {
   label: string
@@ -29,21 +31,40 @@ function StatCard({ label, value, sub, icon: Icon, accent = 'text-primary' }: St
   )
 }
 
-export function StatsCards() {
-  const s = dashboardStats
+interface StatsCardsProps {
+  stats: HubStats
+  isLoading?: boolean
+}
+
+export function StatsCards({ stats, isLoading = false }: StatsCardsProps) {
+  const s = stats
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-5">
+              <div className="bg-muted h-16 animate-pulse rounded-lg" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         label="In the Mix"
-        value={s.inTheMix}
+        value={s.in_the_mix}
         sub="active courses"
         icon={BookOpen}
         accent="text-green-600"
       />
       <StatCard
         label="On Deck"
-        value={s.onDeck}
+        value={s.on_deck}
         sub="scheduled upcoming"
         icon={CalendarClock}
         accent="text-blue-600"
@@ -56,18 +77,11 @@ export function StatsCards() {
         accent="text-violet-600"
       />
       <StatCard
-        label="Hours In"
-        value={s.hoursIn}
-        sub="total learning time"
-        icon={Clock}
-        accent="text-amber-600"
-      />
-      <StatCard
-        label="Day Streak"
-        value={`${s.dayStreak}🔥`}
-        sub="consecutive days"
-        icon={Flame}
-        accent="text-orange-600"
+        label="Dropped"
+        value={s.dropped}
+        sub="cancelled or dropped"
+        icon={XCircle}
+        accent="text-red-500"
       />
     </div>
   )

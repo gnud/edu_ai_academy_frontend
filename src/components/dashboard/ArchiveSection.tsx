@@ -1,14 +1,18 @@
 import { Archive, CheckCircle2, XCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { fakeCourses } from '@/data/courses'
+import type { HubEnrollment } from '@/lib/hubApi'
 
-export function ArchiveSection() {
-  const archived = fakeCourses.filter(
-    (c) => c.status === 'completed' || c.status === 'cancelled',
-  )
-  const completed = archived.filter((c) => c.status === 'completed')
-  const cancelled = archived.filter((c) => c.status === 'cancelled')
+// import { fakeCourses } from '@/data/courses'
+
+interface ArchiveSectionProps {
+  items: HubEnrollment[]
+  isLoading?: boolean
+}
+
+export function ArchiveSection({ items, isLoading = false }: ArchiveSectionProps) {
+  const completed = items.filter((e) => e.semester.status === 'completed')
+  const cancelled = items.filter((e) => e.semester.status === 'cancelled')
 
   return (
     <Card>
@@ -31,24 +35,37 @@ export function ArchiveSection() {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col divide-y p-0">
-        {archived.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-6 py-3">
+              <div className="bg-muted size-4 shrink-0 animate-pulse rounded-full" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
+                <div className="bg-muted h-2.5 w-1/3 animate-pulse rounded" />
+              </div>
+            </div>
+          ))
+        ) : items.length === 0 ? (
           <p className="text-muted-foreground px-6 py-4 text-center text-sm">Nothing archived yet.</p>
         ) : (
-          archived.map((course) => {
-            const isCompleted = course.status === 'completed'
-            const endLabel = course.endDate
-              ? new Date(course.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          items.map((enrollment) => {
+            const { course, semester } = enrollment
+            const isCompleted = semester.status === 'completed'
+            const endLabel = semester.ends_on
+              ? new Date(semester.ends_on).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric',
+                })
               : '—'
 
             return (
-              <div key={course.id} className="flex items-center gap-3 px-6 py-3">
+              <div key={enrollment.id} className="flex items-center gap-3 px-6 py-3">
                 {isCompleted
                   ? <CheckCircle2 className="size-4 shrink-0 text-green-600" />
                   : <XCircle className="size-4 shrink-0 text-red-400" />
                 }
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{course.title}</p>
-                  <p className="text-muted-foreground text-xs">{course.instructorName}</p>
+                  <p className="text-muted-foreground text-xs">{semester.name}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <Badge

@@ -22,27 +22,39 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { NavUser } from '@/components/layout/NavUser'
+import type { PageId } from '@/App'
 
-const navMain = [
+interface NavItem {
+  title: string
+  pageId: PageId
+  icon: React.ElementType
+}
+
+const navMain: { label: string; items: NavItem[] }[] = [
   {
     label: 'Learning',
     items: [
-      { title: 'Dashboard', url: '#', icon: LayoutDashboard, isActive: true },
-      { title: 'My Courses', url: '#', icon: BookOpen },
-      { title: 'Live Classes', url: '#', icon: GraduationCap },
+      { title: 'Dashboard', pageId: 'dashboard', icon: LayoutDashboard },
+      { title: 'My Courses', pageId: 'courses', icon: BookOpen },
+      { title: 'Live Classes', pageId: 'live-classes', icon: GraduationCap },
     ],
   },
   {
     label: 'Community',
     items: [
-      { title: 'Messages', url: '#', icon: MessageSquare },
-      { title: 'Study Groups', url: '#', icon: Users },
-      { title: 'AI Tutor', url: '#', icon: Bot },
+      { title: 'Messages', pageId: 'messages', icon: MessageSquare },
+      { title: 'Study Groups', pageId: 'groups', icon: Users },
+      { title: 'AI Tutor', pageId: 'ai-tutor', icon: Bot },
     ],
   },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  activePage: PageId
+  onNavigate: (page: PageId) => void
+}
+
+export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -70,8 +82,8 @@ export function AppSidebar() {
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      render={<a href={item.url} />}
-                      isActive={item.isActive}
+                      render={<button onClick={() => onNavigate(item.pageId)} />}
+                      isActive={activePage === item.pageId}
                       tooltip={item.title}
                     >
                       <item.icon />
@@ -88,7 +100,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<a href="#" />} tooltip="Settings">
+            <SidebarMenuButton render={<button />} tooltip="Settings">
               <Settings />
               <span>Settings</span>
             </SidebarMenuButton>

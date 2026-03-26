@@ -3,6 +3,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { CoursesPage } from '@/pages/CoursesPage'
 import { CatalogPage } from '@/pages/CatalogPage'
+import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
 
 export type PageId =
   | 'dashboard'
@@ -12,6 +13,7 @@ export type PageId =
   | 'messages'
   | 'groups'
   | 'ai-tutor'
+  | 'auth-sandbox'
 
 function PageContent({ page }: { page: PageId }) {
   switch (page) {
@@ -21,6 +23,8 @@ function PageContent({ page }: { page: PageId }) {
       return <CoursesPage />
     case 'catalog':
       return <CatalogPage />
+    case 'auth-sandbox':
+      return <AuthSandboxPage />
     default:
       return (
         <div className="flex flex-col gap-4">
@@ -38,6 +42,7 @@ const PAGE_TITLES: Record<PageId, string> = {
   messages: 'Messages',
   groups: 'Study Groups',
   'ai-tutor': 'AI Tutor',
+  'auth-sandbox': 'Auth Sandbox',
 }
 
 function App() {

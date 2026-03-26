@@ -2,6 +2,7 @@ import {
   BookOpen,
   Bot,
   GraduationCap,
+  KeyRound,
   LayoutDashboard,
   Library,
   MessageSquare,
@@ -47,6 +48,12 @@ const navMain: { label: string; items: NavItem[] }[] = [
       { title: 'Messages', pageId: 'messages', icon: MessageSquare },
       { title: 'Study Groups', pageId: 'groups', icon: Users },
       { title: 'AI Tutor', pageId: 'ai-tutor', icon: Bot },
+    ],
+  },
+  {
+    label: 'Dev Tools',
+    items: [
+      { title: 'Auth Sandbox', pageId: 'auth-sandbox', icon: KeyRound },
     ],
   },
 ]

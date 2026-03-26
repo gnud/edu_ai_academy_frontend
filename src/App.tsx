@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
+import { DashboardPage } from '@/pages/DashboardPage'
 import { CoursesPage } from '@/pages/CoursesPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 
@@ -14,6 +15,8 @@ export type PageId =
 
 function PageContent({ page }: { page: PageId }) {
   switch (page) {
+    case 'dashboard':
+      return <DashboardPage />
     case 'courses':
       return <CoursesPage />
     case 'catalog':
@@ -21,11 +24,6 @@ function PageContent({ page }: { page: PageId }) {
     default:
       return (
         <div className="flex flex-col gap-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
           <div className="bg-muted/50 min-h-96 flex-1 rounded-xl" />
         </div>
       )
@@ -43,7 +41,7 @@ const PAGE_TITLES: Record<PageId, string> = {
 }
 
 function App() {
-  const [page, setPage] = useState<PageId>('courses')
+  const [page, setPage] = useState<PageId>('dashboard')
 
   return (
     <DashboardLayout title={PAGE_TITLES[page]} activePage={page} onNavigate={setPage}>

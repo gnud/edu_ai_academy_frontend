@@ -68,8 +68,59 @@ export function saveTokens(access: string, refresh: string): void {
 export function clearTokens(): void {
   localStorage.removeItem(KEY_ACCESS)
   localStorage.removeItem(KEY_REFRESH)
+  localStorage.removeItem('aa_profile')
 }
 
 export function isAuthenticated(): boolean {
   return getAccessToken() !== null
+}
+
+// ── User profile cache ──────────────────────────────────────────────────────
+
+const KEY_PROFILE = 'aa_profile'
+
+export interface UserProfile {
+  id:           number
+  username:     string
+  email:        string
+  full_name:    string
+  display_name: string
+  avatar:       string | null
+}
+
+export function getProfile(): UserProfile | null {
+  const raw = localStorage.getItem(KEY_PROFILE)
+  if (!raw) return null
+  try { return JSON.parse(raw) as UserProfile } catch { return null }
+}
+
+export function saveProfile(profile: UserProfile): void {
+  localStorage.setItem(KEY_PROFILE, JSON.stringify(profile))
+}
+
+export function clearProfile(): void {
+  localStorage.removeItem(KEY_PROFILE)
+}
+
+/**
+ * Fetch /api/accounts/me/ and persist the result.
+ * Silently ignored on failure so login still succeeds.
+ */
+export async function fetchAndSaveProfile(): Promise<UserProfile | null> {
+  const token = getAccessToken()
+  if (!token) return null
+  try {
+    const BASE = import.meta.env.DEV
+      ? '/api'
+      : `${import.meta.env.VITE_API_URL}/api`
+    const res = await fetch(`${BASE}/accounts/me/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return null
+    const profile = (await res.json()) as UserProfile
+    saveProfile(profile)
+    return profile
+  } catch {
+    return null
+  }
 }

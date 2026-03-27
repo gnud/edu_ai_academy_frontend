@@ -1,35 +1,53 @@
+import { useEffect, useState } from 'react'
 import { ChevronsUpDown, LogOut, UserCircle } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenu, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
+import {
+  fetchAndSaveProfile,
+  getProfile,
+  type UserProfile,
+} from '@/lib/auth'
 
-const user = {
-  name: 'Jane Student',
-  email: 'jane@example.com',
-  avatar: '',
+function initials(profile: UserProfile | null): string {
+  if (!profile) return '?'
+  const name = profile.display_name || profile.full_name || profile.username
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
 }
 
-function UserAvatar({ className = 'size-8' }: { className?: string }) {
-  return (
-    <Avatar className={`${className} rounded-lg`}>
-      <AvatarImage src={user.avatar} alt={user.name} />
-      <AvatarFallback className="rounded-lg">
-        {user.name.split(' ').map((n) => n[0]).join('')}
-      </AvatarFallback>
-    </Avatar>
-  )
+interface NavUserProps {
+  onLogout: () => void
 }
 
-export function NavUser() {
+export function NavUser({ onLogout }: NavUserProps) {
   const { isMobile } = useSidebar()
+  const [profile, setProfile] = useState<UserProfile | null>(getProfile)
+
+  // If profile wasn't cached yet (e.g. hard refresh after login), fetch it once.
+  useEffect(() => {
+    if (profile) return
+    fetchAndSaveProfile().then((p) => { if (p) setProfile(p) })
+  }, [profile])
+
+  const displayName = profile
+    ? (profile.display_name || profile.full_name || profile.username)
+    : 'Loading…'
+  const subLabel = profile ? profile.email : ''
+  const avatarSrc = profile?.avatar ?? ''
 
   return (
     <SidebarMenu>
@@ -41,10 +59,13 @@ export function NavUser() {
               data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground
               focus-visible:outline-none"
           >
-            <UserAvatar />
+            <Avatar className="size-8 rounded-lg">
+              <AvatarImage src={avatarSrc} alt={displayName} />
+              <AvatarFallback className="rounded-lg">{initials(profile)}</AvatarFallback>
+            </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{user.name}</span>
-              <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+              <span className="truncate font-semibold">{displayName}</span>
+              <span className="text-muted-foreground truncate text-xs">{subLabel}</span>
             </div>
             <ChevronsUpDown className="ml-auto size-4 shrink-0" />
           </DropdownMenuTrigger>
@@ -55,25 +76,37 @@ export function NavUser() {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <UserAvatar />
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">{user.email}</span>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar className="size-8 rounded-lg">
+                    <AvatarImage src={avatarSrc} alt={displayName} />
+                    <AvatarFallback className="rounded-lg">{initials(profile)}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{displayName}</span>
+                    <span className="text-muted-foreground truncate text-xs">{subLabel}</span>
+                  </div>
                 </div>
-              </div>
-            </DropdownMenuLabel>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <UserCircle className="mr-2 size-4" />
-              Profile
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <UserCircle className="mr-2 size-4" />
+                Profile
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut className="mr-2 size-4" />
-              Log out
-            </DropdownMenuItem>
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={onLogout}
+                className="text-red-600 focus:text-red-600"
+              >
+                <LogOut className="mr-2 size-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

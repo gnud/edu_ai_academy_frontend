@@ -61,9 +61,10 @@ const navMain: { label: string; items: NavItem[] }[] = [
 interface AppSidebarProps {
   activePage: PageId
   onNavigate: (page: PageId) => void
+  onLogout: () => void
 }
 
-export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
+export function AppSidebar({ activePage, onNavigate, onLogout }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -115,7 +116,7 @@ export function AppSidebar({ activePage, onNavigate }: AppSidebarProps) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <NavUser />
+        <NavUser onLogout={onLogout} />
       </SidebarFooter>
 
       <SidebarRail />

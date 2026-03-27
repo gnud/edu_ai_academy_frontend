@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, CornerUpLeft, CornerUpRight, Trash2 } from 'lucide-react'
+import { Archive, ChevronDown, ChevronUp, CornerUpLeft, CornerUpRight, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Message, Thread } from '@/data/inbox'
+import type { Folder, Message, Thread } from '@/data/inbox'
 
 function formatFull(date: Date): string {
   return date.toLocaleString('en-US', {
@@ -67,11 +67,13 @@ function MessageBubble({ message, defaultOpen }: { message: Message; defaultOpen
 
 interface ThreadDetailProps {
   thread: Thread
+  folder: Folder
+  onArchive: (id: string) => void
   onDelete: (id: string) => void
   onReply: (threadId: string, body: string) => Promise<void>
 }
 
-export function ThreadDetail({ thread, onDelete, onReply }: ThreadDetailProps) {
+export function ThreadDetail({ thread, folder, onArchive, onDelete, onReply }: ThreadDetailProps) {
   const [replyBody, setReplyBody] = useState('')
   const [sending, setSending]     = useState(false)
   const textareaRef               = useRef<HTMLTextAreaElement>(null)
@@ -100,13 +102,23 @@ export function ThreadDetail({ thread, onDelete, onReply }: ThreadDetailProps) {
           <button className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground" title="Forward">
             <CornerUpRight className="size-4" />
           </button>
-          <button
-            onClick={() => onDelete(thread.id)}
-            className="rounded-lg p-2 text-muted-foreground transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-            title="Delete"
-          >
-            <Trash2 className="size-4" />
-          </button>
+          {folder === 'archived' ? (
+            <button
+              onClick={() => onDelete(thread.id)}
+              className="rounded-lg p-2 text-muted-foreground transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+              title="Delete permanently"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => onArchive(thread.id)}
+              className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              title="Archive"
+            >
+              <Archive className="size-4" />
+            </button>
+          )}
         </div>
       </div>
 

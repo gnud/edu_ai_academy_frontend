@@ -20,9 +20,10 @@ interface TopBarProps {
   title?: string
   onLogout: () => void
   onSearch: (query: string) => void
+  onProfile: () => void
 }
 
-export function TopBar({ title = 'Dashboard', onLogout, onSearch }: TopBarProps) {
+export function TopBar({ title = 'Dashboard', onLogout, onSearch, onProfile }: TopBarProps) {
   const profile = getProfile()
   const displayName = profile
     ? (profile.display_name || profile.full_name || profile.username)
@@ -69,7 +70,7 @@ export function TopBar({ title = 'Dashboard', onLogout, onSearch }: TopBarProps)
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={onProfile}>
                 <UserCircle className="mr-2 size-4" />
                 Profile
               </DropdownMenuItem>

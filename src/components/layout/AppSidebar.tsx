@@ -62,9 +62,10 @@ interface AppSidebarProps {
   activePage: PageId
   onNavigate: (page: PageId) => void
   onLogout: () => void
+  onProfile: () => void
 }
 
-export function AppSidebar({ activePage, onNavigate, onLogout }: AppSidebarProps) {
+export function AppSidebar({ activePage, onNavigate, onLogout, onProfile }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -116,7 +117,7 @@ export function AppSidebar({ activePage, onNavigate, onLogout }: AppSidebarProps
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <NavUser onLogout={onLogout} />
+        <NavUser onLogout={onLogout} onProfile={onProfile} />
       </SidebarFooter>
 
       <SidebarRail />

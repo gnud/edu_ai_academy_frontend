@@ -7,7 +7,7 @@ export function InboxPage() {
   const {
     folder, threads, loading, error,
     selectedId, selected,
-    changeFolder, selectThread, toggleStar, archiveThread, deleteThread, sendReply,
+    changeFolder, selectThread, toggleStar, archiveThread, deleteThread, markUnread, sendReply,
   } = useInbox()
 
   const displayed = threads.filter((t) => {
@@ -54,6 +54,7 @@ export function InboxPage() {
             folder={folder}
             onArchive={archiveThread}
             onDelete={deleteThread}
+            onMarkUnread={markUnread}
             onReply={sendReply}
           />
         : <NoThreadSelected />

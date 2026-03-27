@@ -4,6 +4,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { CoursesPage } from '@/pages/CoursesPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
+import { InboxPage } from '@/pages/InboxPage'
 
 export type PageId =
   | 'dashboard'
@@ -23,6 +24,8 @@ function PageContent({ page }: { page: PageId }) {
       return <CoursesPage />
     case 'catalog':
       return <CatalogPage />
+    case 'messages':
+      return <InboxPage />
     case 'auth-sandbox':
       return <AuthSandboxPage />
     default:

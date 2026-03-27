@@ -1,4 +1,4 @@
-import { ArchiveX, Clock, Inbox, Send, Star, Trash2 } from 'lucide-react'
+import { Archive, Inbox, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Folder, Thread } from '@/data/inbox'
 
@@ -9,18 +9,15 @@ interface FolderItem {
 }
 
 const FOLDERS: FolderItem[] = [
-  { id: 'inbox',   label: 'Inbox',   icon: Inbox   },
-  { id: 'starred', label: 'Starred', icon: Star    },
-  { id: 'sent',    label: 'Sent',    icon: Send    },
-  { id: 'drafts',  label: 'Drafts',  icon: Clock   },
-  { id: 'spam',    label: 'Spam',    icon: ArchiveX },
+  { id: 'inbox',    label: 'Inbox',    icon: Inbox   },
+  { id: 'starred',  label: 'Starred',  icon: Star    },
+  { id: 'archived', label: 'Archived', icon: Archive },
 ]
 
 interface InboxFolderNavProps {
   active: Folder
   threads: Thread[]
   onSelect: (folder: Folder) => void
-  onCompose: () => void
 }
 
 function liveUnreadCount(threads: Thread[], folder: Folder): number {
@@ -30,17 +27,9 @@ function liveUnreadCount(threads: Thread[], folder: Folder): number {
   return visible.filter((t) => !t.isRead).length
 }
 
-export function InboxFolderNav({ active, threads, onSelect, onCompose }: InboxFolderNavProps) {
+export function InboxFolderNav({ active, threads, onSelect }: InboxFolderNavProps) {
   return (
     <div className="flex w-48 shrink-0 flex-col gap-1 border-r bg-background p-3">
-      <button
-        onClick={onCompose}
-        className="mb-3 flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:opacity-90"
-      >
-        <Trash2 className="size-4 hidden" />
-        ✏️ Compose
-      </button>
-
       {FOLDERS.map(({ id, label, icon: Icon }) => {
         const count = liveUnreadCount(threads, id)
         return (

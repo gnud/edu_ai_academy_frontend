@@ -23,6 +23,9 @@ export type ApiError = {
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
+    if (res.status === 401) {
+      window.dispatchEvent(new Event('auth:expired'))
+    }
     let detail: unknown
     try { detail = await res.json() } catch { /* non-JSON error body */ }
     throw { status: res.status, message: res.statusText, detail } satisfies ApiError

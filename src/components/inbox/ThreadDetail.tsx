@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, CornerUpLeft, CornerUpRight, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Message, Thread } from '@/data/inbox'
@@ -68,9 +68,26 @@ function MessageBubble({ message, defaultOpen }: { message: Message; defaultOpen
 interface ThreadDetailProps {
   thread: Thread
   onDelete: (id: string) => void
+  onReply: (threadId: string, body: string) => Promise<void>
 }
 
-export function ThreadDetail({ thread, onDelete }: ThreadDetailProps) {
+export function ThreadDetail({ thread, onDelete, onReply }: ThreadDetailProps) {
+  const [replyBody, setReplyBody] = useState('')
+  const [sending, setSending]     = useState(false)
+  const textareaRef               = useRef<HTMLTextAreaElement>(null)
+
+  async function handleSend() {
+    const body = replyBody.trim()
+    if (!body || sending) return
+    setSending(true)
+    try {
+      await onReply(thread.id, body)
+      setReplyBody('')
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Thread header */}
@@ -111,15 +128,27 @@ export function ThreadDetail({ thread, onDelete }: ThreadDetailProps) {
             Reply to {thread.messages[0].from.name}
           </div>
           <textarea
-            placeholder="Write a reply…"
+            ref={textareaRef}
+            value={replyBody}
+            onChange={(e) => setReplyBody(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSend() }}
+            placeholder="Write a reply… (Ctrl+Enter to send)"
             rows={3}
             className="w-full resize-none bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
           />
           <div className="flex items-center justify-between px-4 pb-3">
-            <button className="rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90">
-              Send
+            <button
+              onClick={handleSend}
+              disabled={!replyBody.trim() || sending}
+              className="rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-40"
+            >
+              {sending ? 'Sending…' : 'Send'}
             </button>
-            <button className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-red-600" title="Discard">
+            <button
+              onClick={() => setReplyBody('')}
+              className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-red-600"
+              title="Discard"
+            >
               <Trash2 className="size-4" />
             </button>
           </div>

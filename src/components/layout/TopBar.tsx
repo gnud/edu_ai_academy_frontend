@@ -1,4 +1,4 @@
-import { Bell, LogOut, Search, UserCircle } from 'lucide-react'
+import { Bell, LogOut, UserCircle } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,17 +11,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { getProfile } from '@/lib/auth'
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete'
 
 interface TopBarProps {
   title?: string
   onLogout: () => void
+  onSearch: (query: string) => void
 }
 
-export function TopBar({ title = 'Dashboard', onLogout }: TopBarProps) {
+export function TopBar({ title = 'Dashboard', onLogout, onSearch }: TopBarProps) {
   const profile = getProfile()
   const displayName = profile
     ? (profile.display_name || profile.full_name || profile.username)
@@ -39,14 +40,7 @@ export function TopBar({ title = 'Dashboard', onLogout }: TopBarProps) {
       <span className="font-semibold text-sm">{title}</span>
 
       <div className="ml-auto flex items-center gap-1">
-        <div className="relative hidden sm:block">
-          <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
-          <Input
-            type="search"
-            placeholder="Search courses..."
-            className="w-56 pl-8 text-sm"
-          />
-        </div>
+        <SearchAutocomplete onSearch={onSearch} />
 
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">

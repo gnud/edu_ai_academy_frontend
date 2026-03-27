@@ -42,9 +42,12 @@ function sortCourses(courses: Course[], sortBy: CourseFilterState['sortBy']): Co
   return copy
 }
 
-export function useApiCourseGrid(actionType: ActionType) {
-  const [filters, setFilters] = useState<CourseFilterState>(DEFAULT_FILTERS)
-  const [page, setPage]       = useState(1)
+export function useApiCourseGrid(actionType: ActionType, initialQuery = '') {
+  const [filters, setFilters] = useState<CourseFilterState>({
+    ...DEFAULT_FILTERS,
+    search: initialQuery,
+  })
+  const [page, setPage] = useState(1)
 
   const [rawCourses, setRawCourses] = useState<Course[]>([])
   const [totalItems, setTotalItems] = useState(0)

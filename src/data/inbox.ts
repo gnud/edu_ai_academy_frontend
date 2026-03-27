@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 
 faker.seed(55)
 
-export type Folder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'spam'
+export type Folder = 'inbox' | 'starred' | 'archived'
 
 export interface Contact {
   id: string
@@ -126,7 +126,7 @@ export const fakeThreads: Thread[] = [
   {
     id: faker.string.uuid(),
     subject: 'Question about Week 3 assignment',
-    folder: 'sent',
+    folder: 'archived',
     isRead: true,
     isStarred: false,
     messages: [{
@@ -140,7 +140,7 @@ export const fakeThreads: Thread[] = [
   {
     id: faker.string.uuid(),
     subject: 'Re: Study group: time change proposal',
-    folder: 'sent',
+    folder: 'archived',
     isRead: true,
     isStarred: false,
     messages: [{

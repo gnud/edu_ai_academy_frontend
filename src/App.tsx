@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { CoursesPage } from '@/pages/CoursesPage'
@@ -87,6 +87,13 @@ function App() {
     setIsAuth(false)
     setAuthView('portal')
   }
+
+  // Redirect to portal whenever any API call receives a 401.
+  useEffect(() => {
+    function onExpired() { handleLogout() }
+    window.addEventListener('auth:expired', onExpired)
+    return () => window.removeEventListener('auth:expired', onExpired)
+  }, [])
 
   function handleSearch(query: string) {
     setSearchQuery(query)

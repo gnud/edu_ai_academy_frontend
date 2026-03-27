@@ -5,6 +5,7 @@ import { CoursesPage } from '@/pages/CoursesPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
 import { InboxPage } from '@/pages/InboxPage'
+import { SearchPage } from '@/pages/SearchPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { ConfirmPasswordPage } from '@/pages/ConfirmPasswordPage'
@@ -22,25 +23,28 @@ export type PageId =
   | 'groups'
   | 'ai-tutor'
   | 'auth-sandbox'
+  | 'search'
 
 const PAGE_TITLES: Record<PageId, string> = {
-  dashboard:    'Dashboard',
-  courses:      'My Courses',
-  catalog:      'Course Catalog',
+  dashboard:      'Dashboard',
+  courses:        'My Courses',
+  catalog:        'Course Catalog',
   'live-classes': 'Live Classes',
-  messages:     'Messages',
-  groups:       'Study Groups',
-  'ai-tutor':   'AI Tutor',
+  messages:       'Messages',
+  groups:         'Study Groups',
+  'ai-tutor':     'AI Tutor',
   'auth-sandbox': 'Auth Sandbox',
+  search:         'Search',
 }
 
-function PageContent({ page }: { page: PageId }) {
+function PageContent({ page, searchQuery }: { page: PageId; searchQuery: string }) {
   switch (page) {
     case 'dashboard':    return <DashboardPage />
     case 'courses':      return <CoursesPage />
     case 'catalog':      return <CatalogPage />
     case 'messages':     return <InboxPage />
     case 'auth-sandbox': return <AuthSandboxPage />
+    case 'search':       return <SearchPage query={searchQuery} />
     default:
       return (
         <div className="flex flex-col gap-4">
@@ -64,9 +68,10 @@ function detectInitialAuthView(): AuthView {
 // ── Root ───────────────────────────────────────────────────────────────────
 
 function App() {
-  const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated)
-  const [page,   setPage]   = useState<PageId>('dashboard')
-  const [authView, setAuthView] = useState<AuthView>(detectInitialAuthView)
+  const [isAuth, setIsAuth]       = useState<boolean>(isAuthenticated)
+  const [page,   setPage]         = useState<PageId>('dashboard')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [authView, setAuthView]   = useState<AuthView>(detectInitialAuthView)
 
   function handleLogin() {
     setIsAuth(true)
@@ -79,16 +84,22 @@ function App() {
     setAuthView('portal')
   }
 
+  function handleSearch(query: string) {
+    setSearchQuery(query)
+    setPage('search')
+  }
+
   // ── Authenticated shell ──────────────────────────────────────────────────
   if (isAuth) {
     return (
       <DashboardLayout
-        title={PAGE_TITLES[page]}
+        title={page === 'search' && searchQuery ? `Search: "${searchQuery}"` : PAGE_TITLES[page]}
         activePage={page}
         onNavigate={setPage}
         onLogout={handleLogout}
+        onSearch={handleSearch}
       >
-        <PageContent page={page} />
+        <PageContent page={page} searchQuery={searchQuery} />
       </DashboardLayout>
     )
   }

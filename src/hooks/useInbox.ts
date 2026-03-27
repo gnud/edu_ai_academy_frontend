@@ -123,6 +123,16 @@ export function useInbox() {
     [selectedId],
   )
 
+  // ── Mark as unread (reset read watermark) ────────────────────────────────
+  const markUnread = useCallback(async (id: string) => {
+    setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, isRead: false } : t)))
+    try {
+      await api.patch(`/messages/threads/${id}/me/`, { last_read_at: null })
+    } catch {
+      setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, isRead: true } : t)))
+    }
+  }, [])
+
   // ── Reply ──────────────────────────────────────────────────────────────────
   const sendReply = useCallback(async (threadId: string, body: string) => {
     const msg = await api.post<ApiReplyMessage>(
@@ -157,6 +167,6 @@ export function useInbox() {
   return {
     folder, threads, loading, error,
     selectedId, selected,
-    changeFolder, selectThread, toggleStar, archiveThread, deleteThread, sendReply,
+    changeFolder, selectThread, toggleStar, archiveThread, deleteThread, markUnread, sendReply,
   }
 }

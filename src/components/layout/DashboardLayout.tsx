@@ -11,14 +11,15 @@ interface DashboardLayoutProps {
   onNavigate: (page: PageId) => void
   onLogout: () => void
   onSearch: (query: string) => void
+  onProfile: () => void
 }
 
-export function DashboardLayout({ children, title, activePage, onNavigate, onLogout, onSearch }: DashboardLayoutProps) {
+export function DashboardLayout({ children, title, activePage, onNavigate, onLogout, onSearch, onProfile }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
-      <AppSidebar activePage={activePage} onNavigate={onNavigate} onLogout={onLogout} />
+      <AppSidebar activePage={activePage} onNavigate={onNavigate} onLogout={onLogout} onProfile={onProfile} />
       <SidebarInset>
-        <TopBar title={title} onLogout={onLogout} onSearch={onSearch} />
+        <TopBar title={title} onLogout={onLogout} onSearch={onSearch} onProfile={onProfile} />
         <main className="flex flex-1 flex-col gap-4 p-4 md:p-6">
           {children}
         </main>

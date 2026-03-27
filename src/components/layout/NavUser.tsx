@@ -31,9 +31,10 @@ function initials(profile: UserProfile | null): string {
 
 interface NavUserProps {
   onLogout: () => void
+  onProfile: () => void
 }
 
-export function NavUser({ onLogout }: NavUserProps) {
+export function NavUser({ onLogout, onProfile }: NavUserProps) {
   const { isMobile } = useSidebar()
   const [profile, setProfile] = useState<UserProfile | null>(getProfile)
 
@@ -92,7 +93,7 @@ export function NavUser({ onLogout }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={onProfile}>
                 <UserCircle className="mr-2 size-4" />
                 Profile
               </DropdownMenuItem>

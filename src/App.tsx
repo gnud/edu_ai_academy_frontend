@@ -6,6 +6,7 @@ import { CatalogPage } from '@/pages/CatalogPage'
 import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
 import { InboxPage } from '@/pages/InboxPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { LoginPage } from '@/pages/LoginPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { ConfirmPasswordPage } from '@/pages/ConfirmPasswordPage'
@@ -24,6 +25,7 @@ export type PageId =
   | 'ai-tutor'
   | 'auth-sandbox'
   | 'search'
+  | 'profile'
 
 const PAGE_TITLES: Record<PageId, string> = {
   dashboard:      'Dashboard',
@@ -35,6 +37,7 @@ const PAGE_TITLES: Record<PageId, string> = {
   'ai-tutor':     'AI Tutor',
   'auth-sandbox': 'Auth Sandbox',
   search:         'Search',
+  profile:        'My Profile',
 }
 
 function PageContent({ page, searchQuery }: { page: PageId; searchQuery: string }) {
@@ -45,6 +48,7 @@ function PageContent({ page, searchQuery }: { page: PageId; searchQuery: string 
     case 'messages':     return <InboxPage />
     case 'auth-sandbox': return <AuthSandboxPage />
     case 'search':       return <SearchPage query={searchQuery} />
+    case 'profile':      return <ProfilePage />
     default:
       return (
         <div className="flex flex-col gap-4">
@@ -98,6 +102,7 @@ function App() {
         onNavigate={setPage}
         onLogout={handleLogout}
         onSearch={handleSearch}
+        onProfile={() => setPage('profile')}
       >
         <PageContent page={page} searchQuery={searchQuery} />
       </DashboardLayout>

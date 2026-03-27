@@ -1,7 +1,6 @@
 import { ArchiveX, Clock, Inbox, Send, Star, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Folder } from '@/data/inbox'
-import { unreadCount } from '@/data/inbox'
+import type { Folder, Thread } from '@/data/inbox'
 
 interface FolderItem {
   id: Folder
@@ -19,11 +18,19 @@ const FOLDERS: FolderItem[] = [
 
 interface InboxFolderNavProps {
   active: Folder
+  threads: Thread[]
   onSelect: (folder: Folder) => void
   onCompose: () => void
 }
 
-export function InboxFolderNav({ active, onSelect, onCompose }: InboxFolderNavProps) {
+function liveUnreadCount(threads: Thread[], folder: Folder): number {
+  const visible = folder === 'starred'
+    ? threads.filter((t) => t.isStarred)
+    : threads.filter((t) => t.folder === folder)
+  return visible.filter((t) => !t.isRead).length
+}
+
+export function InboxFolderNav({ active, threads, onSelect, onCompose }: InboxFolderNavProps) {
   return (
     <div className="flex w-48 shrink-0 flex-col gap-1 border-r bg-background p-3">
       <button
@@ -35,7 +42,7 @@ export function InboxFolderNav({ active, onSelect, onCompose }: InboxFolderNavPr
       </button>
 
       {FOLDERS.map(({ id, label, icon: Icon }) => {
-        const count = unreadCount(id)
+        const count = liveUnreadCount(threads, id)
         return (
           <button
             key={id}

@@ -47,6 +47,7 @@ export function InboxPage() {
       {/* Left: folder nav */}
       <InboxFolderNav
         active={folder}
+        threads={threads}
         onSelect={handleFolderChange}
         onCompose={() => {}}
       />

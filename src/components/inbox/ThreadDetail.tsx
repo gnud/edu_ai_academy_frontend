@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Archive, ChevronDown, ChevronUp, CornerUpLeft, CornerUpRight, Trash2 } from 'lucide-react'
+import { Archive, ChevronDown, ChevronUp, CornerUpLeft, CornerUpRight, MailOpen, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Folder, Message, Thread } from '@/data/inbox'
 
@@ -70,10 +70,11 @@ interface ThreadDetailProps {
   folder: Folder
   onArchive: (id: string) => void
   onDelete: (id: string) => void
+  onMarkUnread: (id: string) => void
   onReply: (threadId: string, body: string) => Promise<void>
 }
 
-export function ThreadDetail({ thread, folder, onArchive, onDelete, onReply }: ThreadDetailProps) {
+export function ThreadDetail({ thread, folder, onArchive, onDelete, onMarkUnread, onReply }: ThreadDetailProps) {
   const [replyBody, setReplyBody] = useState('')
   const [sending, setSending]     = useState(false)
   const textareaRef               = useRef<HTMLTextAreaElement>(null)
@@ -102,6 +103,14 @@ export function ThreadDetail({ thread, folder, onArchive, onDelete, onReply }: T
           <button className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground" title="Forward">
             <CornerUpRight className="size-4" />
           </button>
+          <button
+            onClick={() => onMarkUnread(thread.id)}
+            className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            title="Mark as unread"
+          >
+            <MailOpen className="size-4" />
+          </button>
+
           {folder === 'archived' ? (
             <button
               onClick={() => onDelete(thread.id)}

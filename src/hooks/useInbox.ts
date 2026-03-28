@@ -95,19 +95,43 @@ export function useInbox() {
     [threads],
   )
 
-  // ── Archive (DELETE = archive for caller) ──────────────────────────────────
+  // ── Archive (inbox → archived via PATCH) ──────────────────────────────────
   const archiveThread = useCallback(
+    async (id: string) => {
+      setThreads((prev) => prev.filter((t) => t.id !== id))
+      if (selectedId === id) setSelectedId(null)
+      try {
+        await api.patch(`/messages/threads/${id}/me/`, { folder: 'archived' })
+      } catch {
+        // Silently ignore — thread is already removed from the list view
+      }
+    },
+    [selectedId],
+  )
+
+  // ── Permanent delete (removes participant record) ──────────────────────────
+  const deleteThread = useCallback(
     async (id: string) => {
       setThreads((prev) => prev.filter((t) => t.id !== id))
       if (selectedId === id) setSelectedId(null)
       try {
         await api.delete(`/messages/threads/${id}/`)
       } catch {
-        // Silently ignore — thread is already removed from the list
+        // Silently ignore
       }
     },
     [selectedId],
   )
+
+  // ── Mark as unread (reset read watermark) ────────────────────────────────
+  const markUnread = useCallback(async (id: string) => {
+    setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, isRead: false } : t)))
+    try {
+      await api.patch(`/messages/threads/${id}/me/`, { last_read_at: null })
+    } catch {
+      setThreads((prev) => prev.map((t) => (t.id === id ? { ...t, isRead: true } : t)))
+    }
+  }, [])
 
   // ── Reply ──────────────────────────────────────────────────────────────────
   const sendReply = useCallback(async (threadId: string, body: string) => {
@@ -143,6 +167,6 @@ export function useInbox() {
   return {
     folder, threads, loading, error,
     selectedId, selected,
-    changeFolder, selectThread, toggleStar, archiveThread, sendReply,
+    changeFolder, selectThread, toggleStar, archiveThread, deleteThread, markUnread, sendReply,
   }
 }

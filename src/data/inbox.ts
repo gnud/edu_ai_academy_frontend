@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 
 faker.seed(55)
 
-export type Folder = 'inbox' | 'starred' | 'archived'
+export type Folder = 'inbox' | 'starred' | 'archived' | 'spam' | 'drafts'
 
 export interface Contact {
   id: string

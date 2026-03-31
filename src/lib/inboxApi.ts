@@ -79,7 +79,7 @@ function apiFolder(f: string | null | undefined): Exclude<Folder, 'starred'> {
  * Map a list-level thread (preview only — last message body_preview).
  * Used to populate the ThreadList before detail is loaded.
  */
-export function mapApiThread(item: ApiThreadListItem, myUserId: number): Thread {
+export function mapApiThread(item: ApiThreadListItem, _myUserId: number): Thread {
   const state = item.my_state
   const last  = item.last_message
 

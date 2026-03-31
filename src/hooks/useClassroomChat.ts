@@ -1,21 +1,35 @@
 import { useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 
+export interface ChatMember {
+  id?: number        // user id
+  memberId?: number  // ClassroomGroupMember pk (for kick)
+  name: string
+  color: string
+  role?: string | null
+}
+
 export interface ChatTarget {
   userId: number
   name: string
   avatarColor: string
-  threadId: string | null  // null until thread is created/found
+  threadId: string | null
+  isGroup?: boolean
+  members?: ChatMember[]
 }
 
-export interface ChatWindow extends ChatTarget {
+export interface ChatWindowState extends ChatTarget {
   minimized: boolean
+  deleted?: boolean
+  pendingMention?: string
 }
 
 export function useClassroomChat() {
-  const [windows, setWindows] = useState<ChatWindow[]>([])
+  const [windows, setWindows] = useState<ChatWindowState[]>([])
 
-  const openChat = useCallback(async (target: Omit<ChatTarget, 'threadId'>) => {
+  const openChat = useCallback(async (
+    target: Omit<ChatTarget, 'threadId'> & { threadId?: string | null },
+  ) => {
     // Already open — just restore if minimized.
     setWindows((prev) => {
       const existing = prev.find((w) => w.userId === target.userId)
@@ -24,9 +38,11 @@ export function useClassroomChat() {
           w.userId === target.userId ? { ...w, minimized: false } : w,
         )
       }
-      // Add new window (threadId resolved below).
-      return [...prev, { ...target, threadId: null, minimized: false }]
+      return [...prev, { ...target, threadId: target.threadId ?? null, minimized: false }]
     })
+
+    // If threadId already provided (group chat), nothing more to do.
+    if (target.threadId) return
 
     // Create or find a PM thread with this user.
     try {
@@ -63,8 +79,20 @@ export function useClassroomChat() {
     )
   }, [])
 
-  const openWindows    = windows.filter((w) => !w.minimized)
+  const markChatDeleted = useCallback((userId: number) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.userId === userId ? { ...w, deleted: true, minimized: false } : w)),
+    )
+  }, [])
+
+  const mentionInChat = useCallback((userId: number, text: string) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.userId === userId ? { ...w, pendingMention: text, minimized: false } : w)),
+    )
+  }, [])
+
+  const openWindows     = windows.filter((w) => !w.minimized)
   const minimizedWindows = windows.filter((w) => w.minimized)
 
-  return { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat }
+  return { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat }
 }

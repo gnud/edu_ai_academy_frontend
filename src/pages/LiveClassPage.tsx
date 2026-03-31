@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Radio } from 'lucide-react'
 import { api } from '@/lib/api'
+import { getProfile } from '@/lib/auth'
 import { useLiveClass } from '@/hooks/useLiveClass'
 import { useClassroomChat } from '@/hooks/useClassroomChat'
+import { useClassroomGroups } from '@/hooks/useClassroomGroups'
 import { Classroom } from '@/components/liveclasses/Classroom'
 import { ChatWindow } from '@/components/liveclasses/ChatWindow'
 import { ChatTabBar } from '@/components/liveclasses/ChatTabBar'
-import type { ApiSession, ApiParticipant } from '@/lib/liveClassApi'
+import type { ApiGroup, ApiGroupMember, ApiSession, ApiParticipant } from '@/lib/liveClassApi'
 import type { ApiPage } from '@/lib/inboxApi'
 
 // ── Status badge ────────────────────────────────────────────────────────────
@@ -75,7 +77,43 @@ function SessionList({ onJoin }: { onJoin: (id: number) => void }) {
 
 function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () => void }) {
   const { session, studentParticipants, professorPresent, loading, error } = useLiveClass(sessionId)
-  const { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat } = useClassroomChat()
+  const { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat } = useClassroomChat()
+  const { groups, setGroups, createGroup, deleteGroup, setGroupingActive } = useClassroomGroups(sessionId)
+  const autoOpenedGroupIds = useRef<Set<number>>(new Set())
+
+  const myId        = getProfile()?.id ?? null
+  const isProfessor = !!session && session.professor_id === myId
+
+  // Auto-popup group chat when the current user is placed in a group.
+  useEffect(() => {
+    if (!myId) return
+    for (const group of groups) {
+      if (autoOpenedGroupIds.current.has(group.id)) continue
+      const isMember = group.members.some((m) => m.user_id === myId) || isProfessor
+      if (isMember && group.thread_id) {
+        autoOpenedGroupIds.current.add(group.id)
+        openChat({
+          userId: -(group.id),
+          name: group.name,
+          avatarColor: '#8b5cf6',
+          threadId: String(group.thread_id),
+          isGroup: true,
+          members: group.members.map((m) => ({ id: m.user_id ?? undefined, memberId: m.id, name: m.full_name, color: m.avatar_color, role: m.role })),
+        })
+      }
+    }
+  }, [groups, myId, isProfessor, openChat])
+
+  // Mark group chat windows as deleted when the group is removed from the list.
+  useEffect(() => {
+    const activeGroupUserIds = new Set(groups.map((g) => -(g.id)))
+    const allWindows = [...openWindows, ...minimizedWindows]
+    for (const w of allWindows) {
+      if (w.isGroup && !w.deleted && !activeGroupUserIds.has(w.userId)) {
+        markChatDeleted(w.userId)
+      }
+    }
+  }, [groups, openWindows, minimizedWindows, markChatDeleted])
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading classroom…</p>
   if (error || !session) return <p className="text-sm text-red-500">{error ?? 'Session not found.'}</p>
@@ -97,8 +135,61 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
 
   function handleClickAI() {
     if (!session?.ai_agent?.can_answer_students) return
-    // Stub: AI chat not yet implemented — show placeholder.
     alert(`AI chat with ${session.ai_agent.name} coming soon.`)
+  }
+
+  async function handleCreateGroup(name: string, participantIds: number[]) {
+    await createGroup(name, participantIds)
+  }
+
+  async function handleDeleteGroup(groupId: number) {
+    await deleteGroup(groupId)
+  }
+
+  function handlePMMember(member: ApiGroupMember) {
+    if (!member.user_id) return
+    openChat({ userId: member.user_id, name: member.full_name, avatarColor: member.avatar_color })
+  }
+
+  function handleMentionMember(member: ApiGroupMember, groupId: number) {
+    mentionInChat(-(groupId), `@${member.full_name} `)
+  }
+
+  async function handleKickMember(member: ApiGroupMember, groupId: number) {
+    if (!sessionId) return
+    try {
+      await api.delete(`/classes/${sessionId}/groups/${groupId}/members/${member.id}/`)
+    } catch { /* endpoint not yet implemented — silently ignore */ }
+  }
+
+  function handleTransferMember(_member: ApiGroupMember, _fromGroupId: number) { // eslint-disable-line @typescript-eslint/no-unused-vars
+    // TODO: open transfer dialog to select target group
+    alert('Transfer coming soon.')
+  }
+
+  function handleOpenGroupChat(group: ApiGroup) {
+    if (!group.thread_id) return
+    openChat({
+      userId: -(group.id),
+      name: group.name,
+      avatarColor: '#8b5cf6',
+      threadId: String(group.thread_id),
+      isGroup: true,
+      members: group.members.map((m) => ({ id: m.user_id ?? undefined, memberId: m.id, name: m.full_name, color: m.avatar_color, role: m.role })),
+    })
+  }
+
+  async function handleActivateGrouping() {
+    if (!session) return
+    await setGroupingActive(true)
+    session.grouping_active = true
+  }
+
+  async function handleDeactivateGrouping() {
+    if (!session) return
+    await setGroupingActive(false)
+    session.grouping_active = false
+    setGroups([])
   }
 
   return (
@@ -124,9 +215,20 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
         students={studentParticipants}
         professorParticipant={professorParticipant}
         professorPresent={professorPresent}
+        isProfessor={isProfessor}
+        groups={groups}
         onClickStudent={handleClickStudent}
         onClickProfessor={handleClickProfessor}
         onClickAI={handleClickAI}
+        onCreateGroup={handleCreateGroup}
+        onDeleteGroup={handleDeleteGroup}
+        onOpenGroupChat={handleOpenGroupChat}
+        onActivateGrouping={handleActivateGrouping}
+        onDeactivateGrouping={handleDeactivateGrouping}
+        onPMMember={handlePMMember}
+        onMentionMember={handleMentionMember}
+        onKickMember={handleKickMember}
+        onTransferMember={handleTransferMember}
       />
 
       {/* Floating chat windows */}
@@ -136,9 +238,19 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
           threadId={w.threadId}
           targetName={w.name}
           avatarColor={w.avatarColor}
+          isGroup={w.isGroup}
+          members={w.members}
+          deleted={w.deleted}
+          pendingMention={w.pendingMention}
+          isProfessor={isProfessor}
           index={i}
           onMinimize={() => minimizeChat(w.userId)}
           onClose={() => closeChat(w.userId)}
+          onMentionConsumed={() => mentionInChat(w.userId, '')}
+          onPMMember={handlePMMember}
+          onMentionMember={(m) => handleMentionMember(m, -(w.userId))}
+          onKickMember={(m) => handleKickMember(m, -(w.userId))}
+          onTransferMember={(m) => handleTransferMember(m, -(w.userId))}
         />
       ))}
 

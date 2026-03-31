@@ -1,7 +1,7 @@
-import type { ChatWindow } from '@/hooks/useClassroomChat'
+import type { ChatWindowState } from '@/hooks/useClassroomChat'
 
 interface ChatTabBarProps {
-  minimized: ChatWindow[]
+  minimized: ChatWindowState[]
   onRestore: (userId: number) => void
   onClose: (userId: number) => void
 }

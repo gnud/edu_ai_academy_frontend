@@ -5,10 +5,12 @@ import type { ApiParticipant } from '@/lib/liveClassApi'
 interface StudentSeatProps {
   participant: ApiParticipant | null  // null = empty seat
   seatNumber: number
+  selectable?: boolean
+  selected?: boolean
   onClick?: () => void
 }
 
-export function StudentSeat({ participant, seatNumber, onClick }: StudentSeatProps) {
+export function StudentSeat({ participant, seatNumber, selectable, selected, onClick }: StudentSeatProps) {
   const isPresent = participant?.attendance_status === 'joined'
 
   return (
@@ -16,13 +18,22 @@ export function StudentSeat({ participant, seatNumber, onClick }: StudentSeatPro
       onClick={participant ? onClick : undefined}
       disabled={!participant}
       className={cn(
-        'flex h-24 w-20 flex-col items-center justify-center rounded-xl border-2 transition-all',
+        'relative flex h-24 w-20 flex-col items-center justify-center rounded-xl border-2 transition-all',
         participant
-          ? 'cursor-pointer border-border bg-background shadow-sm hover:border-primary hover:shadow-md'
+          ? selectable
+            ? selected
+              ? 'cursor-pointer border-primary bg-primary/10 shadow-md ring-2 ring-primary'
+              : 'cursor-pointer border-border bg-background shadow-sm hover:border-primary hover:shadow-md'
+            : 'cursor-pointer border-border bg-background shadow-sm hover:border-primary hover:shadow-md'
           : 'cursor-default border-dashed border-border/40 bg-muted/20',
       )}
       title={participant?.full_name}
     >
+      {selected && (
+        <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+          ✓
+        </span>
+      )}
       {participant ? (
         <StudentCharacter
           name={participant.full_name}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api'
 import type { ApiSession, ApiParticipant } from '@/lib/liveClassApi'
 
@@ -42,7 +42,7 @@ export function useLiveClass(sessionId: number | null) {
     }
   }, [sessionId])
 
-  // ── Poll participants every 10 s while session is live ────────────────────
+  // ── Poll participants + session detail every 10 s ─────────────────────────
   useEffect(() => {
     if (!sessionId || !session) return
     if (session.status !== 'live') return
@@ -50,7 +50,11 @@ export function useLiveClass(sessionId: number | null) {
     pollRef.current = setInterval(() => {
       api.get<ApiParticipant[]>(`/classes/${sessionId}/participants/`)
         .then(setParticipants)
-        .catch(() => {/* silently ignore poll errors */})
+        .catch(() => {/* silently ignore */})
+      // Re-fetch full session to pick up grouping_active and other state changes.
+      api.get<ApiSession>(`/classes/${sessionId}/`)
+        .then((s) => setSession(s))
+        .catch(() => {/* silently ignore */})
     }, POLL_INTERVAL_MS)
 
     return () => {

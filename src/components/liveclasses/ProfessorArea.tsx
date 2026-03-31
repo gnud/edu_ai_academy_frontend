@@ -13,7 +13,7 @@ interface ProfessorAreaProps {
 }
 
 export function ProfessorArea({
-  professorParticipant,
+  professorParticipant: _professorParticipant,
   professorName,
   aiAgent,
   professorPresent,

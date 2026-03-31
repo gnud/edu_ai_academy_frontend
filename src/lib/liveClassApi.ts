@@ -1,5 +1,23 @@
 /** Django live-class API — response types. */
 
+export interface ApiGroupMember {
+  id: number
+  user_id: number | null
+  full_name: string
+  avatar_color: string
+  role: string
+}
+
+export interface ApiGroup {
+  id: number
+  name: string
+  is_active: boolean
+  thread_id: number | null
+  member_count: number
+  members: ApiGroupMember[]
+  created_at: string
+}
+
 export interface ApiParticipant {
   id: number
   user_id: number | null
@@ -34,6 +52,8 @@ export interface ApiSession {
   professor_name: string | null
   professor_id: number | null
   created_at: string
+  grouping_active: boolean
   participants: ApiParticipant[]
   ai_agent: ApiAIAgent | null
+  groups: ApiGroup[]
 }

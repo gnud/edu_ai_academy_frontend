@@ -5,6 +5,7 @@ import { CoursesPage } from '@/pages/CoursesPage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { AuthSandboxPage } from '@/pages/AuthSandboxPage'
 import { InboxPage } from '@/pages/InboxPage'
+import { LiveClassPage } from '@/pages/LiveClassPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -46,6 +47,7 @@ function PageContent({ page, searchQuery }: { page: PageId; searchQuery: string 
     case 'courses':      return <CoursesPage />
     case 'catalog':      return <CatalogPage />
     case 'messages':     return <InboxPage />
+    case 'live-classes': return <LiveClassPage />
     case 'auth-sandbox': return <AuthSandboxPage />
     case 'search':       return <SearchPage query={searchQuery} />
     case 'profile':      return <ProfilePage />

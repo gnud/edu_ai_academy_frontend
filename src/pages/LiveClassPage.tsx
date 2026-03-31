@@ -77,7 +77,7 @@ function SessionList({ onJoin }: { onJoin: (id: number) => void }) {
 
 function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () => void }) {
   const { session, studentParticipants, professorPresent, loading, error } = useLiveClass(sessionId)
-  const { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat } = useClassroomChat()
+  const { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat, updateChatMembers } = useClassroomChat()
   const { groups, setGroups, createGroup, deleteGroup, setGroupingActive } = useClassroomGroups(sessionId)
   const autoOpenedGroupIds = useRef<Set<number>>(new Set())
 
@@ -103,6 +103,16 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
       }
     }
   }, [groups, myId, isProfessor, openChat])
+
+  // Sync group chat window member lists with latest poll data.
+  useEffect(() => {
+    for (const group of groups) {
+      updateChatMembers(
+        -(group.id),
+        group.members.map((m) => ({ id: m.user_id ?? undefined, memberId: m.id, name: m.full_name, color: m.avatar_color, role: m.role })),
+      )
+    }
+  }, [groups, updateChatMembers])
 
   // Mark group chat windows as deleted when the group is removed from the list.
   useEffect(() => {

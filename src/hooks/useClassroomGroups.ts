@@ -29,9 +29,13 @@ export function useClassroomGroups(sessionId: number | null) {
   }, [sessionId])
 
   const deleteGroup = useCallback(async (groupId: number) => {
-    await api.delete(`/classes/${sessionId}/groups/${groupId}/`)
     setGroups((prev) => prev.filter((g) => g.id !== groupId))
-  }, [sessionId])
+    try {
+      await api.delete(`/classes/${sessionId}/groups/${groupId}/`)
+    } catch {
+      await fetchGroups()
+    }
+  }, [sessionId, fetchGroups])
 
   const setGroupingActive = useCallback(async (active: boolean) => {
     await api.patch(`/classes/${sessionId}/grouping/`, { grouping_active: active })

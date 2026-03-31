@@ -91,8 +91,14 @@ export function useClassroomChat() {
     )
   }, [])
 
+  const updateChatMembers = useCallback((userId: number, members: ChatMember[]) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.userId === userId ? { ...w, members } : w)),
+    )
+  }, [])
+
   const openWindows     = windows.filter((w) => !w.minimized)
   const minimizedWindows = windows.filter((w) => w.minimized)
 
-  return { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat }
+  return { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat, updateChatMembers }
 }

@@ -19,6 +19,7 @@ export interface ApiSender {
   id: number
   username: string
   full_name: string
+  role: 'professor' | 'admin' | 'support' | 'ai_bot' | null
 }
 
 export interface ApiMessage {

@@ -3,13 +3,8 @@ import { Minus, X } from 'lucide-react'
 import { api } from '@/lib/api'
 import { getProfile } from '@/lib/auth'
 import type { ApiThreadDetailItem } from '@/lib/inboxApi'
-
-interface Message {
-  id: string
-  fromMe: boolean
-  body: string
-  sentAt: Date
-}
+import { ChatBlock } from './ChatBlock'
+import type { ChatMessage } from './ChatBlock'
 
 interface ChatWindowProps {
   threadId: string | null
@@ -21,11 +16,16 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ threadId, targetName, avatarColor, index, onMinimize, onClose }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [body, setBody]         = useState('')
   const [sending, setSending]   = useState(false)
   const bottomRef               = useRef<HTMLDivElement>(null)
-  const myUserId                = getProfile()?.user_id ?? null
+  const profile                 = getProfile()
+  const myUserId                = profile?.id ?? null
+
+  // Determine if thread has multiple senders — show sender info when >1 unique left-side senders.
+  const uniqueSenderIds = new Set(messages.filter((m) => !m.fromMe).map((m) => m.sender?.id))
+  const showSenderInfo  = uniqueSenderIds.size > 1 || messages.some((m) => !m.fromMe)
 
   const fetchMessages = useCallback(() => {
     if (!threadId) return
@@ -36,6 +36,9 @@ export function ChatWindow({ threadId, targetName, avatarColor, index, onMinimiz
           fromMe: m.sender?.id === myUserId,
           body:   m.body,
           sentAt: new Date(m.sent_at),
+          sender: m.sender
+            ? { id: m.sender.id, name: m.sender.full_name || m.sender.username, role: m.sender.role }
+            : null,
         })))
       })
       .catch(() => {/* ignore */})
@@ -61,8 +64,13 @@ export function ChatWindow({ threadId, targetName, avatarColor, index, onMinimiz
         `/messages/threads/${threadId}/messages/`,
         { body: trimmed },
       )
+      const myName = profile?.full_name || profile?.username || 'Me'
       setMessages((prev) => [...prev, {
-        id: String(msg.id), fromMe: true, body: msg.body, sentAt: new Date(msg.sent_at),
+        id:     String(msg.id),
+        fromMe: true,
+        body:   msg.body,
+        sentAt: new Date(msg.sent_at),
+        sender: myUserId ? { id: myUserId, name: myName, role: null } : null,
       }])
       setBody('')
     } finally {
@@ -96,20 +104,12 @@ export function ChatWindow({ threadId, targetName, avatarColor, index, onMinimiz
       </div>
 
       {/* Messages */}
-      <div className="flex h-52 flex-col gap-2 overflow-y-auto p-3">
+      <div className="flex h-52 flex-col gap-3 overflow-y-auto p-3">
         {!threadId && (
           <p className="text-center text-xs text-muted-foreground">Opening chat…</p>
         )}
         {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.fromMe ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-3 py-1.5 text-xs ${
-              m.fromMe
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground'
-            }`}>
-              {m.body}
-            </div>
-          </div>
+          <ChatBlock key={m.id} message={m} showSenderInfo={showSenderInfo} />
         ))}
         <div ref={bottomRef} />
       </div>

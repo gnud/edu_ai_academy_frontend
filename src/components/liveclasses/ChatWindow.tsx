@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Minus, X } from 'lucide-react'
 import { api } from '@/lib/api'
+import { getProfile } from '@/lib/auth'
 import type { ApiThreadDetailItem } from '@/lib/inboxApi'
 
 interface Message {
@@ -24,20 +25,28 @@ export function ChatWindow({ threadId, targetName, avatarColor, index, onMinimiz
   const [body, setBody]         = useState('')
   const [sending, setSending]   = useState(false)
   const bottomRef               = useRef<HTMLDivElement>(null)
+  const myUserId                = getProfile()?.user_id ?? null
 
-  useEffect(() => {
+  const fetchMessages = useCallback(() => {
     if (!threadId) return
     api.get<ApiThreadDetailItem>(`/messages/threads/${threadId}/`)
       .then((detail) => {
         setMessages(detail.messages.map((m) => ({
           id:     String(m.id),
-          fromMe: false, // will be refined once we have myUserId context
+          fromMe: m.sender?.id === myUserId,
           body:   m.body,
           sentAt: new Date(m.sent_at),
         })))
       })
       .catch(() => {/* ignore */})
-  }, [threadId])
+  }, [threadId, myUserId])
+
+  // Initial load + poll every 5s
+  useEffect(() => {
+    fetchMessages()
+    const interval = setInterval(fetchMessages, 5000)
+    return () => clearInterval(interval)
+  }, [fetchMessages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

@@ -1,5 +1,23 @@
 /** Django live-class API — response types. */
 
+export interface ApiBlackboardFile {
+  id: number
+  name: string
+  file_type: 'text' | 'markdown' | 'pdf' | 'image' | 'video' | 'audio'
+  url: string
+  uploaded_at: string
+}
+
+export interface ApiBlackboardState {
+  active_file:   ApiBlackboardFile | null
+  is_fullscreen: boolean
+  is_live:       boolean
+  scroll_y:      number
+  zoom:          number
+  rotation:      number
+  media_playing: boolean
+}
+
 export interface ApiGroupMember {
   id: number
   user_id: number | null

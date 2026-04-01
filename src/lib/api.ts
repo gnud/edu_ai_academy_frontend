@@ -90,6 +90,16 @@ export const api = {
     }).then(handleResponse<T>)
   },
 
+  postForm<T>(path: string, form: FormData, init?: RequestInit): Promise<T> {
+    const token = getAccessToken()
+    return fetch(`${BASE}${path}`, {
+      ...init,
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers },
+      body: form,
+    }).then(handleResponse<T>)
+  },
+
   delete<T = void>(path: string, init?: RequestInit): Promise<T> {
     return fetch(`${BASE}${path}`, {
       ...init,

@@ -31,9 +31,6 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: apiUrl,
           changeOrigin: true,
-          // Strip /api prefix if Django routes don't include it.
-          // Comment out if Django is mounted under /api/.
-          // rewrite: (p) => p.replace(/^\/api/, ''),
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, _res) => {
               console.log('proxy error', apiUrl, err);
@@ -45,6 +42,10 @@ export default defineConfig(({ mode }) => {
               console.log('Received Response from the Target:', proxyRes.statusCode, req.url, apiUrl);
             });
           },
+        },
+        '/media': {
+          target: apiUrl,
+          changeOrigin: true,
         },
       },
     },

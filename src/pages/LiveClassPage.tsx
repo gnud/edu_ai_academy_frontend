@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Radio } from 'lucide-react'
+import { ArrowLeft, Radio, MonitorPlay } from 'lucide-react'
 import { api } from '@/lib/api'
 import { getProfile } from '@/lib/auth'
 import { useLiveClass } from '@/hooks/useLiveClass'
 import { useClassroomChat } from '@/hooks/useClassroomChat'
 import { useClassroomGroups } from '@/hooks/useClassroomGroups'
+import { useBlackboard } from '@/hooks/useBlackboard'
 import { Classroom } from '@/components/liveclasses/Classroom'
 import { ChatWindow } from '@/components/liveclasses/ChatWindow'
 import { ChatTabBar } from '@/components/liveclasses/ChatTabBar'
+import { BlackboardPanel } from '@/components/liveclasses/BlackboardPanel'
 import type { ApiGroup, ApiGroupMember, ApiSession, ApiParticipant } from '@/lib/liveClassApi'
 import type { ApiPage } from '@/lib/inboxApi'
 
@@ -79,10 +81,25 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
   const { session, studentParticipants, professorPresent, loading, error } = useLiveClass(sessionId)
   const { openWindows, minimizedWindows, openChat, minimizeChat, closeChat, restoreChat, markChatDeleted, mentionInChat, updateChatMembers } = useClassroomChat()
   const { groups, setGroups, createGroup, deleteGroup, setGroupingActive } = useClassroomGroups(sessionId)
+  const { state: blackboardState } = useBlackboard(sessionId)
+  const [blackboardOpen, setBlackboardOpen] = useState(false)
   const autoOpenedGroupIds = useRef<Set<number>>(new Set())
+  const prevFullscreen = useRef(false)
 
   const myId        = getProfile()?.id ?? null
   const isProfessor = !!session && session.professor_id === myId
+
+  // Auto-open blackboard for students when professor broadcasts or activates fullscreen.
+  // Auto-close when professor stops fullscreen (true→false transition only, so manual opens are unaffected).
+  useEffect(() => {
+    if (isProfessor) return
+    if (blackboardState.is_fullscreen || blackboardState.is_live) {
+      setBlackboardOpen(true)
+    } else if (prevFullscreen.current && !blackboardState.is_fullscreen) {
+      setBlackboardOpen(false)
+    }
+    prevFullscreen.current = blackboardState.is_fullscreen
+  }, [blackboardState.is_fullscreen, blackboardState.is_live, isProfessor])
 
   // Auto-popup group chat when the current user is placed in a group.
   useEffect(() => {
@@ -217,7 +234,27 @@ function ClassroomView({ sessionId, onBack }: { sessionId: number; onBack: () =>
           <p className="text-xs text-muted-foreground">{session.course_title} · {session.classroom.name}</p>
         </div>
         <StatusBadge status={session.status} />
+        <button
+          onClick={() => setBlackboardOpen(true)}
+          className="flex items-center gap-1.5 rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-700"
+          title="Open blackboard"
+        >
+          <MonitorPlay className="size-4" />
+          Blackboard
+          {blackboardState.is_live && (
+            <span className="ml-1 size-1.5 rounded-full bg-red-400 animate-pulse inline-block" />
+          )}
+        </button>
       </div>
+
+      {/* Blackboard overlay */}
+      {blackboardOpen && (
+        <BlackboardPanel
+          sessionId={sessionId}
+          isProfessor={isProfessor}
+          onClose={() => setBlackboardOpen(false)}
+        />
+      )}
 
       {/* Classroom */}
       <Classroom
